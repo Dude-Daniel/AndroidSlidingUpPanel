@@ -23,6 +23,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 
+import android.widget.ScrollView;
 import com.sothree.slidinguppanel.library.R;
 import com.nineoldandroids.view.animation.AnimatorProxy;
 
@@ -728,9 +729,17 @@ public class SlidingUpPanelLayout extends ViewGroup {
                 }
 
                 // check if scroll down or scroll up and ListView is in top position
-                boolean isCanScrollUp = mSlideOffset == 0 && (y < mInitialMotionY ||
-                        (mScrollableView != null && mScrollableView.getChildAt(0) != null &&
-                                mScrollableView.getChildAt(0).getTop() != 0));
+                boolean canScrollContent = false;
+                if (mScrollableView != null){
+                    if (mScrollableView instanceof ScrollView){
+                        canScrollContent = mScrollableView.getScrollY() > 0;
+                    } else {
+                        canScrollContent =  mScrollableView.getChildAt(0) != null &&
+                                            mScrollableView.getChildAt(0).getTop() != 0;
+                    }
+                }
+
+                boolean isCanScrollUp = mSlideOffset == 0 && (y < mInitialMotionY || canScrollContent);
                 if (isCanScrollUp || (ady > dragSlop && adx > ady) || !isDragViewUnder((int) x, (int) y)) {
                     mDragHelper.cancel();
                     mIsUnableToDrag = true;
