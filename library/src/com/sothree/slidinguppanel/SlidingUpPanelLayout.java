@@ -1297,4 +1297,14 @@ public class SlidingUpPanelLayout extends ViewGroup {
         mScrollableViewTopPadding = topPadding;
         mSlideState = SlideState.EXPANDED;
     }
+
+    /**
+     * Expands or Collapses the panel before it was layouted.
+     * @param isOpen defines the initial state. true means Expanded, false means Collapsed.
+     */
+    public void initPanelState(final boolean isOpen){
+        if (mFirstLayout) {
+            mSlideState = isOpen ? SlideState.EXPANDED : SlideState.COLLAPSED;
+        }
+    }
 }
