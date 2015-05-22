@@ -934,42 +934,36 @@ public class SlidingUpPanelLayout extends ViewGroup {
 
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        if (mScrollableView != null) {
-            return super.drawChild(canvas, child, drawingTime);
-        }
-        final LayoutParams lp = (LayoutParams) child.getLayoutParams();
         boolean result;
         final int save = canvas.save(Canvas.CLIP_SAVE_FLAG);
 
-        boolean drawScrim = false;
-
-        if (mCanSlide && !lp.slideable && mSlideableView != null) {
+        if (mSlideableView != child) {
             // Clip against the slider; no sense drawing what will immediately be covered,
             // Unless the panel is set to overlay content
+            canvas.getClipBounds(mTmpRect);
             if (!mOverlayContent) {
-                canvas.getClipBounds(mTmpRect);
                 if (mIsSlidingUp) {
                     mTmpRect.bottom = Math.min(mTmpRect.bottom, mSlideableView.getTop());
                 } else {
                     mTmpRect.top = Math.max(mTmpRect.top, mSlideableView.getBottom());
                 }
-                canvas.clipRect(mTmpRect);
             }
-            if (mSlideOffset < 1) {
-                drawScrim = true;
+
+            canvas.clipRect(mTmpRect);
+            result = super.drawChild(canvas, child, drawingTime);
+
+            if (mCoveredFadeColor != 0 && mSlideOffset < 1) {
+                final int baseAlpha = (mCoveredFadeColor & 0xff000000) >>> 24;
+                final int imag = (int) (baseAlpha * (1 - mSlideOffset));
+                final int color = imag << 24 | (mCoveredFadeColor & 0xffffff);
+                mCoveredFadePaint.setColor(color);
+                canvas.drawRect(mTmpRect, mCoveredFadePaint);
             }
+        } else {
+            result = super.drawChild(canvas, child, drawingTime);
         }
 
-        result = super.drawChild(canvas, child, drawingTime);
         canvas.restoreToCount(save);
-
-        if (drawScrim) {
-            final int baseAlpha = (mCoveredFadeColor & 0xff000000) >>> 24;
-            final int imag = (int) (baseAlpha * (1 - mSlideOffset));
-            final int color = imag << 24 | (mCoveredFadeColor & 0xffffff);
-            mCoveredFadePaint.setColor(color);
-            canvas.drawRect(mTmpRect, mCoveredFadePaint);
-        }
 
         return result;
     }
